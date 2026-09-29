@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Room — Cierre de Unidad 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1B2D; --surface:#16233D; --surface-2:#1E2E4A; --line:#2D3F5F;
+    --text:#F5F7FA; --text-muted:#8B9BB8;
+    --teal:#2DD4BF; --teal-dim:rgba(45,212,191,.15);
+    --amber:#FBBF24; --amber-dim:rgba(251,191,36,.15);
+    --rose:#FB7185; --rose-dim:rgba(251,113,133,.15);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1200px 600px at 85% -10%, rgba(45,212,191,.08), transparent 60%), var(--bg);
+    color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding:24px 16px 60px;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif; font-size:26px; margin:0 0 4px;}
+  .sub{color:var(--text-muted); font-size:14px; margin:0 0 22px;}
+
+  .doors-track{display:flex; gap:8px; margin-bottom:24px;}
+  .door-dot{flex:1; height:6px; border-radius:3px; background:var(--surface-2);}
+  .door-dot.done{background:var(--teal);}
+  .door-dot.current{background:var(--amber);}
+
+  .code-strip{font-family:'IBM Plex Mono',monospace; font-size:15px; letter-spacing:.15em; color:var(--teal); margin-bottom:20px; min-height:20px;}
+  .code-strip .frag-empty{color:var(--text-muted); opacity:.4;}
+
+  .screen{display:none;}
+  .screen.show{display:block;}
+
+  .start-screen{text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:40px 24px;}
+  .big-icon{font-size:44px; margin-bottom:12px;}
+  .start-btn, .next-door-btn, .escape-btn{background:var(--teal); color:#0F1B2D; border:none; border-radius:12px; padding:14px 32px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; cursor:pointer; margin-top:16px;}
+
+  .door-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:24px;}
+  .door-tag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--amber); background:var(--amber-dim); display:inline-block; padding:3px 10px; border-radius:6px; margin-bottom:12px;}
+  .q-text{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:0 0 20px; line-height:1.4;}
+  .opt{display:block; width:100%; text-align:left; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:10px; font-size:14px; cursor:pointer; color:var(--text);}
+  .opt:hover{border-color:var(--teal);}
+  .opt.correct{background:var(--teal-dim); border-color:var(--teal); color:var(--teal); font-weight:600;}
+  .opt.wrong{background:var(--rose-dim); border-color:var(--rose); color:var(--rose); font-weight:600;}
+  .opt:disabled{cursor:default;}
+
+  .door-unlocked{text-align:center; background:var(--surface); border:1px solid var(--teal); border-radius:var(--radius); padding:32px 24px;}
+  .door-unlocked .icon{font-size:40px; margin-bottom:10px;}
+  .fragment-reveal{font-family:'IBM Plex Mono',monospace; font-size:28px; letter-spacing:.2em; color:var(--teal); margin:14px 0;}
+
+  .final-screen{text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:40px 24px;}
+  .code-input{font-family:'IBM Plex Mono',monospace; font-size:20px; letter-spacing:.2em; text-align:center; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px; color:var(--text); width:220px; margin:16px auto; display:block;}
+  .end-icon{font-size:52px; margin-bottom:10px;}
+
+  #lockdown-banner{position:fixed;top:0;left:0;right:0;background:#B45309;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:600;z-index:9999;display:none;}
+</style>
+</head>
+<body>
+<div id="lockdown-banner"></div>
+<div class="wrap">
+  <h1>🔓 Escape Room — Cierre de Unidad 3</h1>
+  <p class="sub">Resolvé las 5 puertas de robótica para reunir el código y escapar.</p>
+
+  <div class="doors-track" id="doorsTrack"></div>
+  <div class="code-strip" id="codeStrip"></div>
+
+  <div class="screen start-screen show" id="startScreen">
+    <div class="big-icon">🔒</div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;margin:0 0 8px;">Quedaste encerrado en el taller de robótica</h2>
+    <p style="color:var(--text-muted);margin:0;">Respondé bien las 3 preguntas de cada puerta para conseguir su fragmento del código.</p>
+    <button class="start-btn" id="startBtn">Empezar</button>
+  </div>
+
+  <div class="screen" id="doorScreen">
+    <div class="door-card">
+      <span class="door-tag" id="doorTag"></span>
+      <p class="q-text" id="qText"></p>
+      <div id="qOpts"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="unlockedScreen">
+    <div class="door-unlocked">
+      <div class="icon">🗝️</div>
+      <p style="color:var(--text-muted);margin:0;">Puerta resuelta. Fragmento obtenido:</p>
+      <div class="fragment-reveal" id="fragmentReveal"></div>
+      <button class="next-door-btn" id="nextDoorBtn">Siguiente puerta →</button>
+    </div>
+  </div>
+
+  <div class="screen" id="finalScreen">
+    <div class="final-screen">
+      <div class="end-icon">🚪</div>
+      <h2 style="font-family:'Space Grotesk',sans-serif;">¡Reuniste las 5 puertas!</h2>
+      <p style="color:var(--text-muted);">Ingresá el código completo para escapar:</p>
+      <input class="code-input" id="codeInput" maxlength="10" placeholder="__________">
+      <button class="escape-btn" id="escapeBtn">Escapar</button>
+      <p id="finalMsg" style="margin-top:14px; font-size:14px;"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+const PUERTAS = [{"tema": "Automatización y mecanismos", "fragmento": "R2", "preguntas": [{"q": "¿Cuáles son las 3 características de la automatización robotizada?", "opts": ["Percepción, razonamiento, acción", "Velocidad, tamaño, color", "Precio, marca, modelo"], "correct": 0}, {"q": "¿Qué hace un engranaje?", "opts": ["Transmite rotación entre piezas dentadas", "Cambia dirección de una fuerza", "Amplifica una fuerza"], "correct": 0}, {"q": "¿Qué hace una polea?", "opts": ["Cambia la dirección de una fuerza", "Transmite rotación con dientes", "Corta materiales"], "correct": 0}]}, {"tema": "Máquinas simples", "fragmento": "D2", "preguntas": [{"q": "¿Qué máquina simple reduce el esfuerzo a cambio de más distancia?", "opts": ["Plano inclinado", "Cuña", "Rueda y eje"], "correct": 0}, {"q": "¿Cuántas máquinas simples clásicas existen?", "opts": ["6", "3", "10"], "correct": 0}, {"q": "¿Qué máquina simple separa o corta materiales?", "opts": ["Cuña", "Polea", "Palanca"], "correct": 0}]}, {"tema": "Motores y control", "fragmento": "C2", "preguntas": [{"q": "¿Qué motor permite control preciso de ángulo?", "opts": ["Servomotor", "Motor DC", "Motor a gasolina"], "correct": 0}, {"q": "¿Qué circuito es más confiable ante fallas parciales?", "opts": ["Paralelo", "Serie", "Ninguno"], "correct": 0}, {"q": "¿Qué tipo de motor gira de forma continua y simple?", "opts": ["Motor DC", "Servomotor", "Motor paso a paso"], "correct": 0}]}, {"tema": "Sensores y robots", "fragmento": "D3", "preguntas": [{"q": "¿Qué percibe un sensor?", "opts": ["Información del entorno", "Solo sonido", "Nada relevante"], "correct": 0}, {"q": "¿Qué hace el controlador de un robot?", "opts": ["Procesa información y decide", "Solo percibe el entorno", "Ejecuta sin procesar"], "correct": 0}, {"q": "¿Qué tipo de robot percibe, aprende y decide?", "opts": ["Inteligente", "De control fijo", "Ninguno"], "correct": 0}]}, {"tema": "Trabajo en equipo y ciencia", "fragmento": "R7", "preguntas": [{"q": "¿Qué es un objetivo común en un equipo?", "opts": ["La meta compartida del equipo", "Un error de comunicación", "Un tipo de robot"], "correct": 0}, {"q": "¿Qué implica respetar la diversidad en un equipo?", "opts": ["Valorar distintas formas de pensar", "Que todos piensen igual", "Ignorar diferencias"], "correct": 0}, {"q": "¿Qué considera el uso responsable de la tecnología?", "opts": ["Su impacto social", "Solo el costo", "Nada relevante"], "correct": 0}]}];
+const CODIGO_FINAL = "R2D2C2D3R7";
+let doorIdx = 0, qIdx = 0, collected = [];
+
+function renderTrack(){
+  const track = document.getElementById('doorsTrack');
+  track.innerHTML = '';
+  PUERTAS.forEach((p, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'door-dot' + (i < doorIdx ? ' done' : i === doorIdx ? ' current' : '');
+    track.appendChild(dot);
+  });
+  const strip = document.getElementById('codeStrip');
+  strip.innerHTML = PUERTAS.map((p,i) => collected[i] ? collected[i] : '<span class="frag-empty">••</span>').join(' ');
+}
+
+function showScreen(id){
+  ['startScreen','doorScreen','unlockedScreen','finalScreen'].forEach(s => document.getElementById(s).classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+
+function startDoor(){
+  qIdx = 0;
+  showQuestion();
+}
+
+function showQuestion(){
+  const door = PUERTAS[doorIdx];
+  const p = door.preguntas[qIdx];
+  document.getElementById('doorTag').textContent = 'Puerta ' + (doorIdx+1) + ' — ' + door.tema;
+  document.getElementById('qText').textContent = p.q;
+  const optsEl = document.getElementById('qOpts');
+  optsEl.innerHTML = '';
+  const order = p.opts.map((_,i)=>i);
+  for (let i = order.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i],order[j]] = [order[j],order[i]];
+  }
+  order.forEach(origIdx => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = p.opts[origIdx];
+    btn.onclick = () => {
+      Array.from(optsEl.children).forEach(b => b.disabled = true);
+      if (origIdx === p.correct) {
+        btn.classList.add('correct');
+        setTimeout(() => {
+          qIdx++;
+          if (qIdx < door.preguntas.length) {
+            showQuestion();
+          } else {
+            unlockDoor();
+          }
+        }, 600);
+      } else {
+        btn.classList.add('wrong');
+        optsEl.children[order.indexOf(p.correct)].classList.add('correct');
+        setTimeout(() => { showQuestion(); }, 1000);
+      }
+    };
+    optsEl.appendChild(btn);
+  });
+  showScreen('doorScreen');
+}
+
+function unlockDoor(){
+  collected[doorIdx] = PUERTAS[doorIdx].fragmento;
+  document.getElementById('fragmentReveal').textContent = PUERTAS[doorIdx].fragmento;
+  showScreen('unlockedScreen');
+  renderTrack();
+}
+
+document.getElementById('nextDoorBtn').onclick = () => {
+  doorIdx++;
+  if (doorIdx < PUERTAS.length) {
+    renderTrack();
+    startDoor();
+  } else {
+    renderTrack();
+    showScreen('finalScreen');
+  }
+};
+
+document.getElementById('escapeBtn').onclick = () => {
+  const val = document.getElementById('codeInput').value.trim().toUpperCase().replace(/\s+/g,'');
+  const msg = document.getElementById('finalMsg');
+  if (val === CODIGO_FINAL) {
+    msg.textContent = '🎉 ¡Correcto! Escapaste del taller de robótica.';
+    msg.style.color = 'var(--teal)';
+    try { localStorage.setItem('juego_escape_u3', JSON.stringify({completado:true, fecha:new Date().toISOString()})); } catch(e) {}
+  } else {
+    msg.textContent = 'Código incorrecto. Revisá los fragmentos y probá de nuevo.';
+    msg.style.color = 'var(--rose)';
+  }
+};
+
+document.getElementById('startBtn').onclick = () => {
+  renderTrack();
+  startDoor();
+};
+
+renderTrack();
+
+// Bloqueo básico
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && ['u','s','p'].includes(e.key.toLowerCase()))) {
+    e.preventDefault();
+  }
+});
+let tabSwitches = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    tabSwitches++;
+    const banner = document.getElementById('lockdown-banner');
+    banner.textContent = '⚠ Cambiaste de pestaña ' + tabSwitches + ' vez/veces';
+    banner.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>

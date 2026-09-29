@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>U3 RA6 · Sesión 3 — Aplicaciones de la robótica en distintos sectores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F7FA; --surface:#FFFFFF; --surface-2:#EEF2F7; --line:#D7DEE8;
+    --text:#16233D; --text-muted:#5B6B85;
+    --teal:#0F9488; --teal-dim:rgba(15,148,136,.12);
+    --amber:#B45309; --amber-dim:rgba(180,83,9,.12);
+    --coral:#DC2626; --coral-dim:rgba(220,38,38,.12);
+    --blue:#0369A1; --blue-dim:rgba(3,105,161,.12);
+    --violet:#7C3AED; --violet-dim:rgba(124,58,237,.12);
+    --rose:#DB2777; --rose-dim:rgba(219,39,119,.12);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:radial-gradient(1100px 550px at 85% -10%, rgba(45,212,191,.07), transparent 60%), var(--bg);
+    color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:32px 20px 70px;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif;font-weight:600;margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;}
+  header h1{font-size:26px;line-height:1.3;margin-bottom:8px;}
+  header .meta{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);margin-bottom:18px;}
+  header p{color:var(--text-muted);font-size:14.5px;line-height:1.65;max-width:640px;}
+
+  section{margin-top:44px;}
+  .sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;}
+  .sec-num{font-family:'IBM Plex Mono',monospace;color:var(--teal);font-size:13px;}
+  .sec-head h2{font-size:19px;}
+
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-bottom:14px;}
+  .step-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .step-badge{width:26px;height:26px;border-radius:50%;background:var(--teal-dim);color:var(--teal);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;flex:0 0 auto;}
+  .step-top h3{font-size:15.5px;}
+  .step p{font-size:14px;line-height:1.65;color:var(--text);margin:0 0 12px;}
+  .expected{background:var(--teal-dim);border:1px solid rgba(45,212,191,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
+  .expected .lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+  .expected .val{font-family:'IBM Plex Mono',monospace;font-size:13px;white-space:pre-wrap;color:#0F6E56;}
+  textarea{
+    width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--text);
+    font-family:'IBM Plex Mono',monospace;font-size:13px;padding:10px 12px;min-height:70px;resize:vertical;margin-bottom:10px;
+  }
+  .step-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500;}
+  .btn:hover{border-color:var(--teal);}
+  .solution{display:none;margin-top:12px;background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;white-space:pre-wrap;color:var(--text-muted);}
+  .solution.show{display:block;}
+
+  .match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media (max-width:600px){.match-wrap{grid-template-columns:1fr;}}
+  .match-col{display:flex;flex-direction:column;gap:8px;}
+  .match-col .col-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+  .match-item{
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:14px;
+    text-align:left;color:var(--text);transition:border-color .15s, background .15s;
+  }
+  .match-item.selected{border-color:var(--teal);background:var(--teal-dim);}
+  .match-item.correct{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+  .match-item.wrong{border-color:var(--coral);background:var(--coral-dim);}
+  .match-status{margin-top:12px;font-size:13px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
+
+  .quiz-q{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;}
+  .quiz-q p.qtext{font-size:14.5px;font-weight:500;margin:0 0 10px;}
+  .quiz-opt{display:block;width:100%;text-align:left;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13.5px;color:var(--text);margin-bottom:6px;}
+  .quiz-opt:hover{border-color:var(--teal);}
+  .quiz-opt.correct{border-color:var(--teal);background:var(--teal-dim);}
+  .quiz-opt.wrong{border-color:var(--coral);background:var(--coral-dim);}
+  .quiz-fb{font-size:12.5px;color:var(--text-muted);margin-top:6px;display:none;}
+  .quiz-fb.show{display:block;}
+
+  table.rubric{width:100%;border-collapse:collapse;font-size:13px;}
+  table.rubric th{
+    background:#1F3864;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+    text-align:left;padding:10px 12px;border:1px solid var(--line);
+  }
+  table.rubric td{padding:10px 12px;border:1px solid var(--line);vertical-align:top;line-height:1.5;}
+  table.rubric tr:nth-child(even) td{background:var(--surface);}
+  table.rubric tr:nth-child(odd) td{background:#F7FAFC;}
+  .crit{font-weight:500;color:var(--text);}
+  .lvl-inicial{color:#B45309;}
+  .lvl-intermedio{color:#0369A1;}
+  .lvl-avanzado{color:#0F9488;}
+
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--text-muted);}
+
+  /* ==================== Sopa de letras ==================== */
+  .ws-wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
+  .ws-grid{display:grid;gap:3px;background:var(--line);padding:3px;border-radius:8px;flex:0 0 auto;}
+  .ws-cell{
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+    background:var(--surface);color:var(--text);font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;
+    border-radius:3px;cursor:pointer;user-select:none;transition:background .15s;
+  }
+  .ws-cell:hover{background:var(--surface-2);}
+  .ws-cell.ws-selecting{background:var(--amber-dim);outline:2px solid var(--amber);}
+  .ws-cell.found{background:var(--teal-dim);color:var(--teal);outline:1.5px solid var(--teal);}
+  .ws-words{flex:1 1 200px;min-width:180px;}
+  .ws-words ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .ws-words li{padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--text);}
+  .ws-word-label{}
+  .ws-word-done{background:var(--teal-dim);border-color:var(--teal);color:var(--teal);text-decoration:line-through;opacity:.75;}
+  @media (max-width:640px){ .ws-cell{width:22px;height:22px;font-size:11px;} }
+
+  /* ==================== Completar espacios ==================== */
+  .fb-list{display:flex;flex-direction:column;gap:14px;}
+  .fb-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+  .fb-text{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:10px;}
+  .fb-gap{display:inline-block;min-width:90px;text-align:center;border-bottom:2px solid var(--amber);color:var(--amber);font-weight:700;padding:0 4px;}
+  .fb-gap-filled{border-bottom-color:var(--teal);color:var(--teal);}
+  .fb-opts{display:flex;gap:8px;flex-wrap:wrap;}
+  .fb-opt-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 16px;font-size:13.5px;cursor:pointer;}
+  .fb-opt-btn:hover:not(:disabled){border-color:var(--teal);}
+  .fb-opt-btn.correct{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+  .fb-opt-btn.wrong{border-color:var(--coral);background:var(--coral-dim);color:var(--coral);}
+  .fb-opt-btn:disabled{cursor:default;opacity:.85;}
+  .fb-feedback{margin-top:10px;font-size:12.5px;color:var(--text-muted);border-top:1px dashed var(--line);padding-top:8px;}
+
+  /* ==================== Ordenar pasos ==================== */
+  .ord-list{display:flex;flex-direction:column;gap:16px;}
+  .ord-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;transition:border-color .2s;}
+  .ord-card.ord-solved{border-color:var(--teal);background:var(--teal-dim);}
+  .ord-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px;}
+  .ord-steps{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  .ord-step{display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:8px;padding:8px 10px;}
+  .ord-num{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--teal);min-width:20px;}
+  .ord-text{flex:1;font-size:13px;color:var(--text);}
+  .ord-btns{display:flex;gap:4px;}
+  .ord-btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;width:26px;height:26px;cursor:pointer;color:var(--text);font-size:13px;}
+  .ord-btn:hover:not(:disabled){border-color:var(--teal);}
+  .ord-btn:disabled{opacity:.3;cursor:default;}
+  .ord-check-btn{background:var(--teal-dim);border:1px solid var(--teal);color:var(--teal);border-radius:8px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+  .ord-check-btn:disabled{opacity:.85;cursor:default;}
+
+  /* ==================== Ahorcado ==================== */
+  .hm-status{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+  .hm-wrap{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;}
+  .hm-figure{font-family:monospace;font-size:22px;white-space:pre;line-height:1.3;min-width:90px;text-align:center;color:var(--coral);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;}
+  .hm-main{flex:1 1 280px;}
+  .hm-clue{font-size:14px;color:var(--text);margin-bottom:10px;background:var(--amber-dim);border:1px solid var(--amber);border-radius:8px;padding:8px 12px;}
+  .hm-word{font-family:'IBM Plex Mono',monospace;font-size:22px;letter-spacing:4px;font-weight:700;color:var(--teal);margin-bottom:10px;}
+  .hm-errors{font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+  .hm-keyboard{display:flex;flex-wrap:wrap;gap:6px;}
+  .hm-key{width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-weight:600;font-size:13px;cursor:pointer;}
+  .hm-key:hover:not(:disabled){border-color:var(--teal);}
+  .hm-key-correct{background:var(--teal-dim);border-color:var(--teal);color:var(--teal);}
+  .hm-key-wrong{background:var(--coral-dim);border-color:var(--coral);color:var(--coral);}
+  .hm-score{margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-muted);}
+
+  /* ==================== Memoria ==================== */
+  .mem-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:12px;margin-bottom:14px;}
+  .mem-card{aspect-ratio:1.15/1;cursor:pointer;perspective:800px;min-height:90px;}
+  .mem-card-inner{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d;}
+  .mem-flipped .mem-card-inner, .mem-found .mem-card-inner{transform:rotateY(180deg);}
+  .mem-card-back, .mem-card-front{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;
+    border-radius:10px;padding:10px;font-size:12.5px;line-height:1.35;border:1px solid var(--line);
+    backface-visibility:hidden;overflow:hidden;word-break:break-word;
+  }
+  .mem-card-back{background:var(--surface-2);color:var(--teal);font-size:24px;font-weight:700;}
+  .mem-card-front{background:var(--surface);color:var(--text);transform:rotateY(180deg);}
+  .mem-found .mem-card-front{background:var(--teal-dim);border-color:var(--teal);color:var(--teal);}
+  .mem-status{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-muted);}
+
+  /* ==================== Ordenar pasos (sequence) ==================== */
+  .seq-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:8px;}
+  .seq-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;}
+  .seq-text{font-size:13.5px;color:var(--text);}
+  .seq-arrows{display:flex;gap:4px;flex:0 0 auto;}
+  .seq-arrow-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--surface-2);cursor:pointer;font-size:14px;}
+  .seq-arrow-btn:disabled{opacity:.3;cursor:default;}
+  .seq-arrow-btn:hover:not(:disabled){border-color:var(--teal);}
+  .seq-check-btn{background:var(--teal-dim);border:1px solid var(--teal);color:var(--teal);border-radius:8px;padding:9px 18px;font-size:13.5px;font-weight:600;cursor:pointer;}
+  .seq-status{margin-top:10px;font-size:13px;font-weight:600;}
+  .seq-status-ok{color:var(--teal);}
+  .seq-status-bad{color:var(--coral);}
+  .seq-correct{border-color:var(--teal) !important;background:var(--teal-dim);}
+  .seq-wrong{border-color:var(--coral) !important;background:var(--coral-dim);}
+
+  /* ==================== Clasificar en categorías ==================== */
+  .cat-boxes{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:16px;}
+  .cat-box{background:var(--surface-2);border:2px dashed var(--line);border-radius:10px;padding:12px;min-height:100px;}
+  .cat-box-title{font-weight:700;font-size:13px;color:var(--teal);margin-bottom:8px;}
+  .cat-box-items{display:flex;flex-direction:column;gap:6px;}
+  .cat-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;}
+  .cat-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13px;cursor:grab;user-select:none;}
+  .cat-chip-selected{border-color:var(--amber);background:var(--amber-dim);}
+  .cat-chip-placed{cursor:default;font-size:12.5px;}
+  .cat-chip-correct{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+  .cat-chip-wrong{border-color:var(--coral);background:var(--coral-dim);color:var(--coral);}
+  .cat-status{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-muted);}
+
+  /* ==================== Identificar error en código ==================== */
+  .sb-card{margin-bottom:16px;}
+  .sb-code{background:#16233D;border-radius:10px;overflow:hidden;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .sb-line{display:flex;gap:12px;padding:5px 14px;cursor:pointer;color:#DDE6F5;}
+  .sb-line:hover{background:rgba(255,255,255,.06);}
+  .sb-linenum{color:#5B6B85;min-width:20px;text-align:right;user-select:none;}
+  .sb-linetext{white-space:pre;}
+  .sb-line-correct{background:rgba(15,148,136,.25) !important;}
+  .sb-line-wrong{background:rgba(220,38,38,.25) !important;}
+
+  /* ==================== Completar código ==================== */
+  .cf-card{margin-bottom:16px;}
+  .cf-code{background:#16233D;color:#DDE6F5;border-radius:10px;padding:12px 16px;font-family:'IBM Plex Mono',monospace;font-size:13px;white-space:pre-wrap;margin-bottom:10px;}
+  .cf-gap{display:inline-block;min-width:70px;text-align:center;border-bottom:2px solid var(--amber);color:#FBBF24;font-weight:700;padding:0 4px;}
+  .cf-gap-filled{border-bottom-color:var(--teal);color:#5EEAD4;}
+
+  /* ==================== Intruso ==================== */
+  .ooo-card{margin-bottom:16px;}
+  .ooo-grid{display:grid;grid-template-columns:repeat(2, 1fr);gap:10px;}
+  .ooo-tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:13.5px;cursor:pointer;text-align:center;}
+  .ooo-tile:hover:not(:disabled){border-color:var(--teal);}
+  .ooo-correct{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+  .ooo-wrong{border-color:var(--coral);background:var(--coral-dim);color:var(--coral);}
+
+  /* ==================== Ordenar palabras ==================== */
+  .wo-card{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+  .wo-built{min-height:38px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:14px;color:var(--text);margin-bottom:10px;}
+  .wo-built-ok{border-color:var(--teal);background:var(--teal-dim);color:var(--teal);}
+  .wo-built-bad{border-color:var(--coral);background:var(--coral-dim);color:var(--coral);}
+  .wo-pool{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .wo-word-btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;}
+  .wo-word-btn:hover{border-color:var(--teal);}
+  .wo-reset-btn{background:none;border:none;color:var(--text-muted);font-size:11.5px;text-decoration:underline;cursor:pointer;padding:0;}
+
+  /* ==================== Respuesta corta ==================== */
+  .sa-card{margin-bottom:16px;}
+  .sa-question{font-size:14px;color:var(--text);margin-bottom:8px;}
+  .sa-row{display:flex;gap:8px;}
+  .sa-input{flex:1 1 auto;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13.5px;background:var(--surface);color:var(--text);}
+  .sa-input-correct{border-color:var(--teal);background:var(--teal-dim);}
+  .sa-input-wrong{border-color:var(--coral);background:var(--coral-dim);}
+  .sa-submit-btn{background:var(--teal-dim);border:1px solid var(--teal);color:var(--teal);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;}
+
+  /* ==================== Nota final ==================== */
+  .fsb-box{background:var(--surface-2);border:2px solid var(--teal);border-radius:14px;padding:18px 20px;}
+  .fsb-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
+  .fsb-num{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:var(--teal);}
+  .fsb-of{font-size:15px;font-weight:500;color:var(--text-muted);}
+  .fsb-label{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 14px;}
+  .fsb-bar{height:12px;background:var(--surface);border-radius:6px;overflow:hidden;border:1px solid var(--line);}
+  .fsb-fill{height:100%;background:linear-gradient(90deg, var(--teal), #5EEAD4);transition:width .4s;}
+</style><style>
+  .check-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;}
+  .check-item{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px;}
+  .check-item input{width:18px;height:18px;accent-color:var(--teal);}
+  .prop-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;}
+  .prop-card .expr{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#0F6E56;margin-bottom:12px;}
+  .prop-btns{display:flex;gap:10px;}
+  .prop-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 18px;font-size:13.5px;}
+  .prop-btn:hover{border-color:var(--teal);}
+  .prop-btn.correct{border-color:var(--teal);background:var(--teal-dim);}
+  .prop-btn.wrong{border-color:var(--coral);background:var(--coral-dim);}
+  .prop-fb{font-size:12.5px;color:var(--text-muted);margin-top:8px;display:none;}
+  .prop-fb.show{display:block;}
+  .badge-len{display:inline-block;background:var(--blue-dim,rgba(3,105,161,.12));color:var(--blue,#0369A1);border:1px solid rgba(3,105,161,.4);border-radius:6px;padding:3px 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.04em;margin-bottom:10px;}
+</style>
+<style>
+  table.rubric{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px;}
+  table.rubric th{background:#1F3864;color:#fff;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;text-align:left;padding:9px 11px;border:1px solid var(--line);}
+  table.rubric td{padding:9px 11px;border:1px solid var(--line);vertical-align:top;line-height:1.5;background:var(--surface);color:var(--text);}
+  .lvl-inicial{color:#B45309;} .lvl-intermedio{color:#0369A1;} .lvl-avanzado{color:#0F9488;}
+  .progress-note{font-size:11.5px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:-8px;margin-bottom:14px;}
+  .resumen-box{
+    background:var(--teal-dim);border:1px solid rgba(15,148,136,.35);border-radius:10px;
+    padding:14px 16px;font-size:13.5px;line-height:1.6;color:var(--text);
+  }
+  .student-bar{
+    display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+    border-radius:10px;padding:10px 14px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .student-bar label{font-size:12.5px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+  .student-bar input{
+    flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;
+    font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text);background:var(--surface-2, #F5F7FA);
+  }
+  .student-bar input:focus{outline:2px solid var(--teal);outline-offset:1px;}
+  .student-bar.missing input{border-color:#B45309;}
+  .fsb-student{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-muted);margin-top:8px;}
+  .fsb-student b{color:var(--text);}
+  .fsb-student-top{font-size:15px;margin:0 0 10px;padding-bottom:10px;border-bottom:1px dashed var(--line);}
+  .fsb-student-top b{font-family:'Space Grotesk',sans-serif;font-size:16px;}
+  .fsb-cotidiano{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-muted);opacity:.7;margin-top:8px;}
+</style>
+</head>
+<body>
+<!--GATE-START-->
+<style>#gate{position:fixed;inset:0;z-index:2147483000;background:#F5F7FA;display:flex;align-items:center;justify-content:center;padding:20px;font-family:'Inter',Arial,sans-serif;}
+#gate .g-card{background:#fff;border:1px solid #D7DEE8;border-radius:16px;padding:32px 28px;max-width:420px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(22,35,61,.12);}
+#gate .g-ico{font-size:40px;margin-bottom:8px;}#gate h2{font-family:'Space Grotesk',Arial,sans-serif;font-size:20px;margin:0 0 8px;color:#16233D;}
+#gate p{font-size:14px;color:#5B6B85;line-height:1.5;margin:0 0 18px;}
+#gate input{width:100%;font-family:'IBM Plex Mono',monospace;font-size:22px;letter-spacing:.3em;text-align:center;padding:12px;border:1.5px solid #D7DEE8;border-radius:10px;color:#16233D;}
+#gate input:focus{outline:2px solid #0F9488;outline-offset:1px;}
+#gate button{margin-top:12px;width:100%;background:#0F9488;color:#fff;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:15px;cursor:pointer;}
+#gate .g-err{min-height:20px;margin-top:10px;font-size:13px;color:#B45309;font-weight:600;}
+#gate a{display:inline-block;margin-top:8px;font-size:13px;color:#5B6B85;}</style>
+<script>
+(function(){
+  var ACT_ID='u3ra6-a3', PIN='5770';
+  try{
+    if(localStorage.getItem('modo_docente')==='1') return;
+    var st=JSON.parse(localStorage.getItem('course-unlock-state')||'{}');
+    if(st[ACT_ID]===true) return;
+  }catch(e){}
+  document.documentElement.style.overflow='hidden';
+  var g=document.createElement('div'); g.id='gate';
+  g.innerHTML='<div class="g-card"><div class="g-ico">🔒</div><h2>Este cotidiano todavía no está habilitado</h2>'+
+    '<p>Escribí el código que te dio tu docente para abrirlo.</p>'+
+    '<input id="gateInput" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="····">'+
+    '<button id="gateBtn" type="button">Desbloquear</button><div class="g-err" id="gateErr"></div>'+
+    '<a href="Portal_Programacion_Ciberseguridad.html">← Volver al portal</a></div>';
+  document.body.appendChild(g);
+  function intentar(){
+    var v=document.getElementById('gateInput').value.trim();
+    if(v===PIN){
+      try{
+        var st=JSON.parse(localStorage.getItem('course-unlock-state')||'{}'); st[ACT_ID]=true;
+        localStorage.setItem('course-unlock-state', JSON.stringify(st));
+      }catch(e){}
+      g.remove(); document.documentElement.style.overflow='';
+    } else { document.getElementById('gateErr').textContent='Código incorrecto. Pedíselo a tu docente.'; }
+  }
+  document.getElementById('gateBtn').addEventListener('click', intentar);
+  document.getElementById('gateInput').addEventListener('keydown', function(e){ if(e.key==='Enter') intentar(); });
+  setTimeout(function(){ var i=document.getElementById('gateInput'); if(i) i.focus(); }, 50);
+})();
+</script>
+<!--GATE-END-->
+
+<div class="wrap">
+<div class="student-bar" id="studentBar">
+  <label for="studentName">👤 Tu nombre completo:</label>
+  <input type="text" id="studentName" placeholder="Escribí tu nombre aquí antes de empezar" autocomplete="name">
+</div>
+<script>
+(function(){
+  var inp = document.getElementById('studentName');
+  var bar = document.getElementById('studentBar');
+  try {
+    var saved = localStorage.getItem('estudiante_nombre');
+    if (saved) inp.value = saved;
+  } catch(e) {}
+  function checkMissing(){ if(!inp.value.trim()){ bar.classList.add('missing'); } else { bar.classList.remove('missing'); } }
+  checkMissing();
+  inp.addEventListener('input', function(){
+    try { localStorage.setItem('estudiante_nombre', inp.value.trim()); } catch(e) {}
+    checkMissing();
+  });
+})();
+</script>
+<header><div class="badge-len mono">45-50 MIN</div>
+<div class="eyebrow">Sesión 3C</div>
+<h1>Aplicaciones de la robótica en distintos sectores</h1>
+<div class="meta">Unidad 3 · RA6 · Programación y prueba de la seguridad del software</div></header>
+<p style="font-size:13.5px;color:var(--text-muted);margin-bottom:14px;">50 puntos en 5 actividades variadas para dominar las aplicaciones de la robótica.</p>
+<div class="resumen-box"><strong>📌 Recordá esto antes de empezar:</strong> La robótica se aplica en domótica, inmótica, medicina, espacio, submarina, automotriz, social y empresas.<div class="example-box">Sector médico: robot quirúrgico con mayor precisión.</div></div>
+<section><div class="sec-head"><span class="sec-num mono">01</span><h2>1. Sopa de letras (10 pts)</h2></div><div class="progress-note">10 términos por encontrar — arrastrá desde la primera letra hasta la última de cada palabra (o hacé clic en la primera y luego en la última, en línea recta)</div><div class="ws-wrap"><div class="ws-grid" id="wsg-CotidianoU3RA6S3B0"></div><div class="ws-words"><div class="col-label">Buscá:</div><ul id="wsl-CotidianoU3RA6S3B0"></ul></div></div><div class="match-status" id="wss-CotidianoU3RA6S3B0">0 de 10 encontradas</div></section>
+<section><div class="sec-head"><span class="sec-num mono">02</span><h2>2. Completar espacios (10 pts)</h2></div><div class="progress-note">10 espacios por completar — elegí la palabra correcta para cada oración</div><div class="fb-list" id="fbl-CotidianoU3RA6S3B1"></div><div class="match-status" id="fbs-CotidianoU3RA6S3B1">0 de 10 correctas</div></section>
+<section><div class="sec-head"><span class="sec-num mono">03</span><h2>3. Quiz conceptual (10 pts)</h2></div><div class="progress-note">10 preguntas</div><div id="ql-CotidianoU3RA6S3B2"></div><div class="match-status" id="qs-CotidianoU3RA6S3B2">0 de 10 correctas</div></section>
+<section><div class="sec-head"><span class="sec-num mono">04</span><h2>4. Emparejar (10 pts)</h2></div><div class="progress-note">10 pares por emparejar</div><div class="match-wrap"><div class="match-col" id="mcL-CotidianoU3RA6S3B3"></div><div class="match-col" id="mcR-CotidianoU3RA6S3B3"></div></div><div class="match-status" id="mst-CotidianoU3RA6S3B3">0 de 10 correctas</div></section>
+<section><div class="sec-head"><span class="sec-num mono">05</span><h2>5. Verdadero o falso (10 pts)</h2></div><div class="progress-note">10 afirmaciones</div><div id="tfl-CotidianoU3RA6S3B4"></div><div class="match-status" id="tfs-CotidianoU3RA6S3B4">0 de 10 correctas</div></section>
+<section><div class="sec-head"><span class="sec-num mono">FN</span><h2>Nota final</h2></div><div id="final-score-box" class="fsb-box"><div class="fsb-row"><div class="fsb-num">0 <span class="fsb-of">/ 50 puntos</span></div></div></div></section>
+<section><div class="sec-head"><span class="sec-num mono">06</span><h2>Rúbrica de evaluación</h2></div><table class="rubric"><tr><th style="width:30%">Criterio</th><th style="width:8%;text-align:center">Puntos</th><th class="lvl-inicial">Inicial</th><th class="lvl-intermedio">Intermedio</th><th class="lvl-avanzado">Avanzado</th></tr><tr><td class="crit">Reconoce aplicaciones de la robótica en distintos sectores.</td><td style="text-align:center;font-weight:700;">10</td><td>No reconoce correctamente estas aplicaciones.</td><td>Reconoce la mayoría, con algún error.</td><td>Reconoce con precisión aplicaciones en todos los sectores.</td></tr><tr><td class="crit">Completa correctamente enunciados sobre aplicaciones por sector.</td><td style="text-align:center;font-weight:700;">10</td><td>No completa correctamente.</td><td>Completa la mayoría, con algún error.</td><td>Completa con precisión todos los enunciados.</td></tr><tr><td class="crit">Responde correctamente preguntas sobre aplicaciones sectoriales.</td><td style="text-align:center;font-weight:700;">10</td><td>No responde correctamente.</td><td>Responde la mayoría, con algún error.</td><td>Responde con precisión todas las preguntas.</td></tr><tr><td class="crit">Relaciona ejemplos concretos con el sector correspondiente.</td><td style="text-align:center;font-weight:700;">10</td><td>No relaciona correctamente.</td><td>Relaciona la mayoría, con algún error.</td><td>Relaciona con precisión todos los ejemplos.</td></tr><tr><td class="crit">Distingue afirmaciones verdaderas de falsas sobre aplicaciones sectoriales.</td><td style="text-align:center;font-weight:700;">10</td><td>No distingue correctamente.</td><td>Distingue la mayoría, con algún error.</td><td>Distingue con precisión todas las afirmaciones.</td></tr></table></section>
+
+<style>
+  .cotidiano-nav{
+    display:flex;justify-content:space-between;align-items:stretch;gap:12px;
+    margin:28px 0 18px;font-family:'Inter',Arial,sans-serif;
+  }
+  .cotidiano-nav a, .cotidiano-nav span{
+    flex:1;display:flex;flex-direction:column;gap:4px;padding:14px 18px;
+    border-radius:12px;border:1px solid #D7DEE8;background:#FFFFFF;text-decoration:none;
+    color:#16233D;transition:transform .15s, border-color .15s;
+  }
+  .cotidiano-nav a:hover{transform:translateY(-1px);border-color:#0F9488;}
+  .cotidiano-nav .nav-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5B6B85;text-transform:uppercase;letter-spacing:.04em;}
+  .cotidiano-nav .nav-title{font-size:13.5px;font-weight:600;line-height:1.35;}
+  .cotidiano-nav .nav-next{text-align:right;align-items:flex-end;}
+  .cotidiano-nav .nav-disabled{opacity:.4;pointer-events:none;background:#F5F7FA;}
+  @media (max-width:640px){
+    .cotidiano-nav{flex-direction:column;}
+    .cotidiano-nav .nav-next{align-items:flex-start;text-align:left;}
+  }
+</style>
+<nav class="cotidiano-nav"><a href="Cotidiano_U3RA6_S2.html" class="nav-prev"><span class="nav-label">← Sesión anterior</span><span class="nav-title">Diseño, control y programación de robots</span></a><a href="Cotidiano_U3RA6_S4.html" class="nav-next"><span class="nav-label">Siguiente sesión →</span><span class="nav-title">Construcción y evaluación de efectividad: cierre del RA6</span></a></nav><footer>CTP Mercedes Norte · Ciberseguridad · Programación y prueba de la seguridad del software — Sesión 3</footer><script>
+const COTIDIANO_ID = 'Cotidiano_U3RA6_S3';
+
+window.__scores = window.__scores || {};
+window.__celebrated = false;
+function reportScore(uid, correct, total) {
+  const points = total > 0 ? Math.round((correct/total)*10) : 0;
+  window.__scores[uid] = points;
+  renderFinalScore();
+}
+function fireConfetti() {
+  const colors = ['#0F9488','#B45309','#0369A1','#7C3AED','#DB2777'];
+  for (let i = 0; i < 70; i++) {
+    const el = document.createElement('div');
+    const rot = Math.random()*360;
+    el.style.cssText = 'position:fixed;left:' + (Math.random()*100) + 'vw;top:-12px;width:8px;height:8px;' +
+      'background:' + colors[Math.floor(Math.random()*colors.length)] + ';opacity:1;z-index:99999;' +
+      'border-radius:' + (Math.random()>0.5 ? '50%' : '2px') + ';transform:rotate(' + rot + 'deg);pointer-events:none;';
+    document.body.appendChild(el);
+    const duration = 2200 + Math.random()*1600;
+    const xDrift = (Math.random()-0.5)*240;
+    try {
+      el.animate([
+        { transform: 'translate(0,0) rotate(' + rot + 'deg)', opacity: 1 },
+        { transform: 'translate(' + xDrift + 'px, 105vh) rotate(' + (rot+360) + 'deg)', opacity: 0.2 }
+      ], { duration: duration, easing: 'ease-in' });
+    } catch(e) {}
+    setTimeout(function(){ el.remove(); }, duration);
+  }
+}
+function renderFinalScore() {
+  const el = document.getElementById('final-score-box');
+  if (!el) return;
+  const vals = Object.values(window.__scores);
+  const sum = vals.reduce((a,b)=>a+b, 0);
+  const max = Object.keys(window.__scores).length * 10;
+  const pct = max > 0 ? Math.round((sum/max)*100) : 0;
+  let label = 'En progreso';
+  let labelClass = 'fsb-label-progress';
+  if (max >= 50) {
+    if (pct >= 85) { label = 'Avanzado'; labelClass = 'fsb-label-avanzado'; }
+    else if (pct >= 60) { label = 'Intermedio'; labelClass = 'fsb-label-proceso'; }
+    else { label = 'Inicial'; labelClass = 'fsb-label-inicial'; }
+  }
+  let nombre = '';
+  try { nombre = (localStorage.getItem('estudiante_nombre') || '').trim(); } catch(e) {}
+  el.innerHTML = `
+    ${nombre ? `<div class="fsb-student fsb-student-top">👤 <b>${nombre}</b></div>` : `<div class="fsb-student fsb-student-top" style="color:#B45309;">⚠ Escribí tu nombre arriba antes de entregar</div>`}
+    <div class="fsb-row">
+      <div class="fsb-num">${pct} <span class="fsb-of">/ 100</span></div>
+      <div class="fsb-label ${labelClass}">${label}</div>
+    </div>
+    <div class="fsb-bar"><div class="fsb-fill" style="width:${Math.min(pct,100)}%"></div></div>
+    ${nombre ? `<div class="fsb-cotidiano">${typeof COTIDIANO_ID !== 'undefined' ? COTIDIANO_ID : document.title}</div>` : ``}
+  `;
+  try {
+    if (typeof COTIDIANO_ID !== 'undefined' && max >= 50) {
+      localStorage.setItem('progreso_' + COTIDIANO_ID, JSON.stringify({pct: pct, label: label, nombre: nombre, fecha: new Date().toISOString()}));
+    }
+  } catch(e) {}
+  if (max >= 50 && pct >= 85 && !window.__celebrated) {
+    window.__celebrated = true;
+    fireConfetti();
+  }
+}
+
+
+(function(){
+const GRID_CotidianoU3RA6S3B0 = [["U", "I", "E", "M", "P", "R", "E", "S", "A", "I", "P", "K", "M"], ["X", "L", "N", "S", "H", "G", "F", "F", "X", "D", "J", "O", "E"], ["S", "A", "L", "D", "U", "I", "M", "O", "A", "S", "R", "L", "D"], ["B", "S", "U", "B", "U", "B", "N", "W", "H", "S", "F", "H", "I"], ["S", "Q", "E", "T", "P", "S", "M", "M", "G", "M", "B", "H", "C"], ["E", "O", "E", "C", "O", "O", "T", "A", "O", "C", "P", "A", "I"], ["P", "R", "C", "S", "T", "M", "S", "R", "R", "T", "C", "Y", "N"], ["O", "M", "O", "I", "P", "O", "O", "E", "I", "I", "I", "X", "A"], ["E", "L", "R", "F", "A", "A", "R", "T", "T", "A", "N", "C", "U"], ["B", "G", "L", "A", "B", "L", "C", "O", "R", "X", "K", "A", "A"], ["X", "R", "B", "Y", "C", "K", "M", "I", "L", "I", "Y", "F", "S"], ["H", "K", "B", "P", "J", "O", "T", "A", "A", "K", "Z", "Z", "W"], ["V", "Z", "C", "C", "D", "R", "P", "C", "D", "L", "U", "A", "H"]];
+const PLACEMENTS_CotidianoU3RA6S3B0 = [{"word": "AUTOMOTRIZ", "cells": [[2, 1], [3, 2], [4, 3], [5, 4], [6, 5], [7, 6], [8, 7], [9, 8], [10, 9], [11, 10]]}, {"word": "SUBMARINA", "cells": [[1, 3], [2, 4], [3, 5], [4, 6], [5, 7], [6, 8], [7, 9], [8, 10], [9, 11]]}, {"word": "INDUSTRIA", "cells": [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9]]}, {"word": "DOMOTICA", "cells": [[12, 4], [11, 5], [10, 6], [9, 7], [8, 8], [7, 9], [6, 10], [5, 11]]}, {"word": "INMOTICA", "cells": [[2, 5], [3, 6], [4, 7], [5, 8], [6, 9], [7, 10], [8, 11], [9, 12]]}, {"word": "ESPACIAL", "cells": [[5, 2], [6, 3], [7, 4], [8, 5], [9, 6], [10, 7], [11, 8], [12, 9]]}, {"word": "MEDICINA", "cells": [[0, 12], [1, 12], [2, 12], [3, 12], [4, 12], [5, 12], [6, 12], [7, 12]]}, {"word": "EMPRESA", "cells": [[0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [0, 8]]}, {"word": "SOCIAL", "cells": [[4, 0], [5, 1], [6, 2], [7, 3], [8, 4], [9, 5]]}, {"word": "SECTOR", "cells": [[3, 1], [4, 2], [5, 3], [6, 4], [7, 5], [8, 6]]}];
+const CLUES_CotidianoU3RA6S3B0 = [{"word": "DOMOTICA", "clue": "Automatización aplicada al hogar"}, {"word": "INMOTICA", "clue": "Automatización aplicada a edificios"}, {"word": "MEDICINA", "clue": "Sector con robots quirúrgicos"}, {"word": "ESPACIAL", "clue": "Sector con robots exploradores"}, {"word": "SUBMARINA", "clue": "Investigación con robots en el mar"}, {"word": "AUTOMOTRIZ", "clue": "Sector de fabricación de vehículos"}, {"word": "SOCIAL", "clue": "Sector con robots de compañía o educativos"}, {"word": "EMPRESA", "clue": "Sector con automatización administrativa"}, {"word": "INDUSTRIA", "clue": "Sector general de producción con robots"}, {"word": "SECTOR", "clue": "Área específica de aplicación robótica"}];
+const SIZE_CotidianoU3RA6S3B0 = 13;
+let found = new Set();
+let firstCell = null;
+let dragging = false;
+let dragPath = [];
+
+const gEl = document.getElementById('wsg-CotidianoU3RA6S3B0');
+gEl.style.gridTemplateColumns = `repeat(${SIZE_CotidianoU3RA6S3B0}, 1fr)`;
+gEl.style.userSelect = 'none';
+gEl.style.touchAction = 'none';
+const cellEls = [];
+for (let r=0; r<SIZE_CotidianoU3RA6S3B0; r++) {
+  cellEls.push([]);
+  for (let c=0; c<SIZE_CotidianoU3RA6S3B0; c++) {
+    const d = document.createElement('div');
+    d.className = 'ws-cell';
+    d.textContent = GRID_CotidianoU3RA6S3B0[r][c];
+    d.dataset.r = r; d.dataset.c = c;
+    d.onclick = () => onCellClick(r, c, d);
+    d.onmousedown = (e) => { e.preventDefault(); startDrag(r, c, d); };
+    d.onmouseenter = () => { if (dragging) extendDrag(r, c, d); };
+    d.onmouseup = () => { if (dragging) endDrag(r, c, d); };
+    d.ontouchstart = (e) => { e.preventDefault(); startDrag(r, c, d); };
+    gEl.appendChild(d);
+    cellEls[r].push(d);
+  }
+}
+gEl.addEventListener('touchmove', (e) => {
+  if (!dragging) return;
+  e.preventDefault();
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (el && el.classList.contains('ws-cell')) {
+    extendDrag(parseInt(el.dataset.r), parseInt(el.dataset.c), el);
+  }
+}, {passive:false});
+document.addEventListener('touchend', () => {
+  if (dragging && dragPath.length) {
+    const last = dragPath[dragPath.length-1];
+    endDrag(last.r, last.c, last.el);
+  }
+});
+document.addEventListener('mouseup', () => {
+  if (dragging) {
+    dragPath.forEach(p => p.el.classList.remove('ws-selecting'));
+    dragging = false; dragPath = [];
+  }
+});
+
+const lEl = document.getElementById('wsl-CotidianoU3RA6S3B0');
+CLUES_CotidianoU3RA6S3B0.forEach(({word, clue}) => {
+  const li = document.createElement('li');
+  li.id = 'wsw-CotidianoU3RA6S3B0-' + word;
+  li.innerHTML = `<span class="ws-word-label">${clue}</span>`;
+  lEl.appendChild(li);
+});
+
+function cellsEqual(a, b) { return a[0]===b[0] && a[1]===b[1]; }
+
+function tryMatch(r1, c1, r2, c2) {
+  for (const p of PLACEMENTS_CotidianoU3RA6S3B0) {
+    if (found.has(p.word)) continue;
+    const cells = p.cells;
+    const start = cells[0], end = cells[cells.length-1];
+    if ((cellsEqual(start,[r1,c1]) && cellsEqual(end,[r2,c2])) ||
+        (cellsEqual(start,[r2,c2]) && cellsEqual(end,[r1,c1]))) {
+      return p;
+    }
+  }
+  return null;
+}
+
+function checkMatch(r1, c1, r2, c2) {
+  const match = tryMatch(r1, c1, r2, c2);
+  if (match) {
+    match.cells.forEach(([rr,cc]) => cellEls[rr][cc].classList.add('found'));
+    found.add(match.word);
+    const li = document.getElementById('wsw-CotidianoU3RA6S3B0-' + match.word);
+    if (li) li.classList.add('ws-word-done');
+    document.getElementById('wss-CotidianoU3RA6S3B0').textContent = found.size + ' de 10 encontradas';
+    reportScore('CotidianoU3RA6S3B0', found.size, 10);
+  }
+  return match;
+}
+
+function startDrag(r, c, el) {
+  if (el.classList.contains('found')) return;
+  dragging = true;
+  dragPath = [{r, c, el}];
+  el.classList.add('ws-selecting');
+}
+
+function extendDrag(r, c, el) {
+  if (!dragging || el.classList.contains('found')) return;
+  const already = dragPath.some(p => p.r === r && p.c === c);
+  if (!already) {
+    dragPath.push({r, c, el});
+    el.classList.add('ws-selecting');
+  }
+}
+
+function endDrag(r, c, el) {
+  const start = dragPath[0];
+  dragPath.forEach(p => p.el.classList.remove('ws-selecting'));
+  dragging = false; dragPath = [];
+  if (start) checkMatch(start.r, start.c, r, c);
+}
+
+function onCellClick(r, c, el) {
+  if (dragging) return;
+  if (el.classList.contains('found')) return;
+  if (!firstCell) {
+    firstCell = {r, c, el};
+    el.classList.add('ws-selecting');
+    return;
+  }
+  checkMatch(firstCell.r, firstCell.c, r, c);
+  firstCell.el.classList.remove('ws-selecting');
+  firstCell = null;
+}
+})();
+
+(function(){
+const ITEMS_CotidianoU3RA6S3B1 = [{"texto": "La ___ es automatización del hogar.", "respuesta": "domótica", "opciones": ["domótica", "inmótica", "medicina"], "fb": "Aplicada al hogar."}, {"texto": "La ___ es automatización de edificios.", "respuesta": "inmótica", "opciones": ["inmótica", "domótica", "industria"], "fb": "Distinto del hogar."}, {"texto": "Un robot quirúrgico aplica en sector ___.", "respuesta": "médico", "opciones": ["médico", "espacial", "social"], "fb": "Procedimientos de precisión."}, {"texto": "Robots exploradores en otros planetas son aplicación ___.", "respuesta": "espacial", "opciones": ["espacial", "submarina", "doméstica"], "fb": "Exploración del espacio."}, {"texto": "Un robot que explora el fondo marino es aplicación ___.", "respuesta": "submarina", "opciones": ["submarina", "espacial", "social"], "fb": "Investigación submarina."}, {"texto": "Un brazo robótico en ensamblaje de autos es aplicación ___.", "respuesta": "automotriz", "opciones": ["automotriz", "médica", "social"], "fb": "Industria automotriz."}, {"texto": "Un robot educativo es aplicación ___.", "respuesta": "social", "opciones": ["social", "espacial", "submarina"], "fb": "Ámbito educativo/social."}, {"texto": "Automatizar procesos administrativos es aplicación en ___.", "respuesta": "empresas", "opciones": ["empresas", "el hogar exclusivamente", "el espacio"], "fb": "Contexto empresarial."}, {"texto": "La robótica aplica en varios ___ con distintas configuraciones.", "respuesta": "sectores", "opciones": ["sectores", "colores", "precios"], "fb": "Diversidad de aplicaciones."}, {"texto": "Investigar aplicaciones por sector ayuda a comprender su ___.", "respuesta": "diversidad", "opciones": ["diversidad", "ausencia", "limitación"], "fb": "Impacto amplio en sociedad."}];
+let done = 0, answered = new Array(ITEMS_CotidianoU3RA6S3B1.length).fill(false);
+const listEl = document.getElementById('fbl-CotidianoU3RA6S3B1');
+
+ITEMS_CotidianoU3RA6S3B1.forEach((item, idx) => {
+  const parts = item.texto.split('___');
+  const card = document.createElement('div');
+  card.className = 'fb-card';
+  const p = document.createElement('div');
+  p.className = 'fb-text';
+  p.innerHTML = parts[0] + '<span class="fb-gap" id="fbg-CotidianoU3RA6S3B1-'+idx+'">______</span>' + (parts[1]||'');
+  card.appendChild(p);
+  const optsWrap = document.createElement('div');
+  optsWrap.className = 'fb-opts';
+  const shuffled = [...item.opciones].sort(()=>Math.random()-0.5);
+  shuffled.forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'fb-opt-btn';
+    b.textContent = opt;
+    b.onclick = () => {
+      if (answered[idx]) return;
+      answered[idx] = true;
+      const gapEl = document.getElementById('fbg-CotidianoU3RA6S3B1-'+idx);
+      if (opt === item.respuesta) {
+        b.classList.add('correct');
+        gapEl.textContent = opt;
+        gapEl.classList.add('fb-gap-filled');
+        done++;
+      } else {
+        b.classList.add('wrong');
+        optsWrap.querySelectorAll('.fb-opt-btn').forEach(x => { if (x.textContent === item.respuesta) x.classList.add('correct'); });
+        gapEl.textContent = item.respuesta;
+        gapEl.classList.add('fb-gap-filled');
+      }
+      document.getElementById('fbs-CotidianoU3RA6S3B1').textContent = done + ' de 10 correctas';
+      reportScore('CotidianoU3RA6S3B1', done, 10);
+      const fb = document.createElement('div');
+      fb.className = 'fb-feedback';
+      fb.textContent = item.fb;
+      card.appendChild(fb);
+      optsWrap.querySelectorAll('.fb-opt-btn').forEach(x => x.disabled = true);
+    };
+    optsWrap.appendChild(b);
+  });
+  card.appendChild(optsWrap);
+  listEl.appendChild(card);
+});
+})();
+
+(function(){
+const Q_CotidianoU3RA6S3B2 = [{"q": "La domótica se refiere a:", "opts": ["Automatización del hogar", "Solo automatización de fábricas", "Nada relacionado con robótica"], "correct": 0, "fb": "Aplicada al hogar."}, {"q": "La inmótica se refiere a:", "opts": ["Automatización de edificios", "Lo mismo que domótica", "Solo vehículos"], "correct": 0, "fb": "Distinto del hogar."}, {"q": "Un robot quirúrgico aplica en:", "opts": ["Sector médico", "Sector espacial", "Ninguno"], "correct": 0, "fb": "Procedimientos de precisión."}, {"q": "Robots exploradores en otros planetas son aplicación:", "opts": ["Espacial", "Submarina exclusivamente", "Doméstica"], "correct": 0, "fb": "Exploración espacial."}, {"q": "Un robot que explora el fondo marino es aplicación:", "opts": ["Submarina", "Espacial exclusivamente", "Social"], "correct": 0, "fb": "Investigación submarina."}, {"q": "Un brazo robótico en autos es aplicación:", "opts": ["Automotriz", "Médica exclusivamente", "Social"], "correct": 0, "fb": "Industria automotriz."}, {"q": "Un robot educativo es aplicación:", "opts": ["Social", "Espacial exclusivamente", "Submarina"], "correct": 0, "fb": "Ámbito educativo/social."}, {"q": "Automatizar procesos administrativos es aplicación en:", "opts": ["Empresas", "Solo el hogar", "Solo el espacio"], "correct": 0, "fb": "Contexto empresarial."}, {"q": "¿Puede la robótica aplicarse en varios sectores a la vez?", "opts": ["Sí", "No, solo uno fijo", "Es imposible"], "correct": 0, "fb": "Diversidad de aplicaciones."}, {"q": "Investigar aplicaciones por sector ayuda a:", "opts": ["Comprender la diversidad de impacto", "No aporta comprensión", "Solo memorizar nombres"], "correct": 0, "fb": "Dimensiona impacto amplio."}];
+let done_CotidianoU3RA6S3B2 = 0;
+const listEl = document.getElementById('ql-CotidianoU3RA6S3B2');
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+Q_CotidianoU3RA6S3B2.forEach((item, idx) => {
+  const order = shuffle(item.opts.map((_, i) => i));
+  const newCorrect = order.indexOf(item.correct);
+  const card = document.createElement('div');
+  card.className = 'prop-card';
+  let optsHtml = '<div class="prop-btns" style="flex-direction:column;align-items:stretch;">';
+  order.forEach((origIdx, oi) => {
+    optsHtml += `<button class="prop-btn" style="text-align:left;margin-bottom:6px;" data-oi="${oi}">${item.opts[origIdx]}</button>`;
+  });
+  optsHtml += '</div>';
+  card.innerHTML = '<div class="expr">' + item.q + '</div>' + optsHtml + '<div class="prop-fb"></div>';
+  const btns = card.querySelectorAll('.prop-btn');
+  const fb = card.querySelector('.prop-fb');
+  btns.forEach(b => {
+    b.onclick = () => {
+      if (card.dataset.answered) return;
+      card.dataset.answered = '1';
+      const oi = parseInt(b.dataset.oi);
+      btns.forEach(x => x.disabled = true);
+      if (oi === newCorrect) { b.classList.add('correct'); done_CotidianoU3RA6S3B2++; }
+      else { b.classList.add('wrong'); btns[newCorrect].classList.add('correct'); }
+      fb.textContent = item.fb; fb.classList.add('show');
+      document.getElementById('qs-CotidianoU3RA6S3B2').textContent = done_CotidianoU3RA6S3B2 + ' de 10 correctas';
+      reportScore('CotidianoU3RA6S3B2', done_CotidianoU3RA6S3B2, 10);
+    };
+  });
+  listEl.appendChild(card);
+});
+})();
+
+(function(){
+const PAIRS_CotidianoU3RA6S3B3 = [["Domótica", "Automatización del hogar"], ["Inmótica", "Automatización de edificios"], ["Robot quirúrgico", "Aplicación en el sector médico"], ["Robot explorador espacial", "Aplicación en el sector espacial"], ["Robot submarino", "Investigación en el fondo marino"], ["Brazo en ensamblaje", "Aplicación en el sector automotriz"], ["Robot educativo", "Aplicación en el sector social"], ["Automatización administrativa", "Aplicación en empresas"], ["Diversidad de sectores", "Característica de la robótica"], ["Impacto amplio", "Resultado de investigar por sector"]];
+let left = PAIRS_CotidianoU3RA6S3B3.map((p,i)=>({text:p[0], idx:i}));
+let right = PAIRS_CotidianoU3RA6S3B3.map((p,i)=>({text:p[1], idx:i}));
+right.sort(()=>Math.random()-0.5);
+left.sort(()=>Math.random()-0.5);
+let selL = null, selR = null, done = 0;
+const Lc = document.getElementById('mcL-CotidianoU3RA6S3B3'), Rc = document.getElementById('mcR-CotidianoU3RA6S3B3');
+function render(arr, container, side) {
+  container.innerHTML = '';
+  arr.forEach(item => {
+    const b = document.createElement('button');
+    b.className = 'match-btn';
+    b.textContent = item.text;
+    b.dataset.idx = item.idx;
+    if (item.done) { b.classList.add('correct'); b.disabled = true; }
+    b.onclick = () => {
+      if (item.done) return;
+      if (side === 'L') { selL = item; container.querySelectorAll('.match-btn').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); }
+      else { selR = item; container.querySelectorAll('.match-btn').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); }
+      if (selL && selR) {
+        if (selL.idx === selR.idx) {
+          selL.done = true; selR.done = true; done++;
+          document.getElementById('mst-CotidianoU3RA6S3B3').textContent = done + ' de 10 correctas';
+          reportScore('CotidianoU3RA6S3B3', done, 10);
+        }
+        selL = null; selR = null;
+        render(left, Lc, 'L'); render(right, Rc, 'R');
+      }
+    };
+    container.appendChild(b);
+  });
+}
+render(left, Lc, 'L'); render(right, Rc, 'R');
+})();
+
+(function(){
+const ITEMS_CotidianoU3RA6S3B4 = [{"expr": "La domótica se refiere a la automatización del hogar.", "correct": true, "fb": "Correcto."}, {"expr": "La inmótica es lo mismo que la domótica.", "correct": false, "fb": "Falso, la inmótica es de edificios."}, {"expr": "Un robot quirúrgico aplica en el sector médico.", "correct": true, "fb": "Correcto."}, {"expr": "Robots exploradores espaciales son ejemplo de aplicación espacial.", "correct": true, "fb": "Correcto."}, {"expr": "Un robot submarino investiga en el espacio exterior.", "correct": false, "fb": "Falso, investiga el fondo marino."}, {"expr": "Un brazo robótico en ensamblaje es aplicación automotriz.", "correct": true, "fb": "Correcto."}, {"expr": "Un robot educativo es aplicación en el sector social.", "correct": true, "fb": "Correcto."}, {"expr": "La robótica solo aplica a un único sector fijo.", "correct": false, "fb": "Falso, aplica a múltiples sectores."}, {"expr": "Automatizar procesos administrativos es aplicación empresarial.", "correct": true, "fb": "Correcto."}, {"expr": "Investigar por sector no aporta comprensión del impacto.", "correct": false, "fb": "Falso, sí aporta comprensión."}];
+let done_CotidianoU3RA6S3B4 = 0;
+const listEl = document.getElementById('tfl-CotidianoU3RA6S3B4');
+ITEMS_CotidianoU3RA6S3B4.forEach((item, idx) => {
+  const card = document.createElement('div');
+  card.className = 'prop-card';
+  card.innerHTML = '<div class="expr">' + item.expr + '</div><div class="prop-btns"><button class="prop-btn" data-v="true">Verdadero</button><button class="prop-btn" data-v="false">Falso</button></div><div class="prop-fb"></div>';
+  const btns = card.querySelectorAll('.prop-btn');
+  const fb = card.querySelector('.prop-fb');
+  btns.forEach(b => {
+    b.onclick = () => {
+      if (card.dataset.answered) return;
+      card.dataset.answered = '1';
+      const val = b.dataset.v === 'true';
+      btns.forEach(x => x.disabled = true);
+      if (val === item.correct) { b.classList.add('correct'); done_CotidianoU3RA6S3B4++; }
+      else { b.classList.add('wrong'); Array.from(btns).find(x => (x.dataset.v==='true')===item.correct).classList.add('correct'); }
+      fb.textContent = item.fb; fb.classList.add('show');
+      document.getElementById('tfs-CotidianoU3RA6S3B4').textContent = done_CotidianoU3RA6S3B4 + ' de 10 correctas';
+      reportScore('CotidianoU3RA6S3B4', done_CotidianoU3RA6S3B4, 10);
+    };
+  });
+  listEl.appendChild(card);
+});
+})();
+
+</script>
+</div>
+
+<div id="lockdown-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#B45309;color:#FFFFFF;text-align:center;padding:10px 16px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.15);">
+  ⚠️ Volviste a esta actividad. Recordá mantenerla activa mientras la resolvés — cambios de pestaña quedan registrados (<span id="lockdown-count">0</span>).
+</div>
+<script>
+(function(){
+  // Bloquear clic derecho
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+
+  // Bloquear atajos de teclado comunes de inspección/código fuente
+  document.addEventListener('keydown', function(e){
+    const k = e.key ? e.key.toUpperCase() : '';
+    if (k === 'F12') { e.preventDefault(); return; }
+    if (e.ctrlKey && e.shiftKey && (k === 'I' || k === 'J' || k === 'C')) { e.preventDefault(); return; }
+    if (e.ctrlKey && (k === 'U' || k === 'S' || k === 'P')) { e.preventDefault(); return; }
+    if (e.metaKey && e.altKey && (k === 'I' || k === 'J' || k === 'C')) { e.preventDefault(); return; }
+  });
+
+  // Detectar cambio de pestaña / minimizado y avisar al volver
+  let switchCount = 0;
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) return;
+    switchCount++;
+    const banner = document.getElementById('lockdown-banner');
+    const countEl = document.getElementById('lockdown-count');
+    if (banner && countEl) {
+      countEl.textContent = switchCount;
+      banner.style.display = 'block';
+      setTimeout(function(){ banner.style.display = 'none'; }, 6000);
+    }
+  });
+})();
+</script>
+</body>
+</html>

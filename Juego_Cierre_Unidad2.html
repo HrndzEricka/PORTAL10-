@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contrarreloj — Cierre de Unidad 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F7FA; --surface:#FFFFFF; --surface-2:#EEF2F7; --line:#D7DEE8;
+    --text:#16233D; --text-muted:#5B6B85;
+    --teal:#0F9488; --teal-dim:rgba(15,148,136,.12);
+    --amber:#B45309; --amber-dim:rgba(180,83,9,.12);
+    --rose:#DB2777; --rose-dim:rgba(219,39,119,.12);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1200px 600px at 85% -10%, rgba(45,212,191,.07), transparent 60%), var(--bg);
+    color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding:24px 16px 60px;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif; font-size:26px; margin:0 0 4px;}
+  .sub{color:var(--text-muted); font-size:14px; margin:0 0 22px;}
+
+  .hud{display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;}
+  .hud .stat{flex:1; min-width:100px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 16px; text-align:center;}
+  .hud .stat .n{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:24px;}
+  .hud .stat .l{font-size:10px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.05em;}
+  #hudTime .n{color:var(--teal);}
+  #hudScore .n{color:var(--amber);}
+  #hudLives .n{color:var(--rose);}
+
+  .timer-track{height:8px; background:var(--surface-2); border-radius:4px; overflow:hidden; margin-bottom:24px;}
+  .timer-fill{height:100%; background:var(--teal); width:100%; transition:width 1s linear;}
+
+  .start-screen, .game-screen, .end-screen{display:none;}
+  .start-screen.show, .game-screen.show, .end-screen.show{display:block;}
+
+  .start-screen{text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:40px 24px;}
+  .start-screen .big-icon{font-size:44px; margin-bottom:12px;}
+  .start-btn{background:var(--teal); color:#fff; border:none; border-radius:12px; padding:14px 32px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; cursor:pointer; margin-top:16px;}
+
+  .q-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:24px;}
+  .ra-tag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); background:var(--teal-dim); display:inline-block; padding:3px 10px; border-radius:6px; margin-bottom:12px;}
+  .q-text{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:0 0 20px; line-height:1.4;}
+  .opt{display:block; width:100%; text-align:left; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; margin-bottom:10px; font-size:14px; cursor:pointer; color:var(--text);}
+  .opt:hover{border-color:var(--teal);}
+  .opt.correct{background:var(--teal-dim); border-color:var(--teal); color:var(--teal); font-weight:600;}
+  .opt.wrong{background:var(--rose-dim); border-color:var(--rose); color:var(--rose); font-weight:600;}
+  .opt:disabled{cursor:default;}
+
+  .end-screen{text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:40px 24px;}
+  .end-screen .trophy{font-size:48px; margin-bottom:10px;}
+  .end-screen h2{font-family:'Space Grotesk',sans-serif; font-size:24px; margin:0 0 6px;}
+  .end-screen p{color:var(--text-muted); margin:0 0 20px;}
+  .restart-btn{background:var(--amber); color:#fff; border:none; border-radius:10px; padding:12px 24px; font-weight:600; cursor:pointer; font-size:14px;}
+
+  #lockdown-banner{position:fixed;top:0;left:0;right:0;background:#B45309;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:600;z-index:9999;display:none;}
+</style>
+</head>
+<body>
+<div id="lockdown-banner"></div>
+<div class="wrap">
+  <h1>⏱ Contrarreloj — Cierre de Unidad 2</h1>
+  <p class="sub">Respondé la mayor cantidad de preguntas de Python en 90 segundos. Tenés 3 vidas.</p>
+
+  <div class="start-screen show" id="startScreen">
+    <div class="big-icon">⏱</div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;margin:0 0 8px;">¿Listo para el desafío?</h2>
+    <p style="color:var(--text-muted);margin:0;">90 segundos · 3 vidas · preguntas mezcladas de toda la Unidad 2</p>
+    <button class="start-btn" id="startBtn">Empezar</button>
+  </div>
+
+  <div class="game-screen" id="gameScreen">
+    <div class="hud">
+      <div class="stat" id="hudTime"><div class="n" id="statTime">90</div><div class="l">Segundos</div></div>
+      <div class="stat" id="hudScore"><div class="n" id="statScore">0</div><div class="l">Puntos</div></div>
+      <div class="stat" id="hudLives"><div class="n" id="statLives">❤❤❤</div><div class="l">Vidas</div></div>
+    </div>
+    <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+    <div class="q-card">
+      <span class="ra-tag" id="qRa">RA1</span>
+      <p class="q-text" id="qText"></p>
+      <div id="qOpts"></div>
+    </div>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <div class="trophy" id="endIcon">🏆</div>
+    <h2 id="endTitle">¡Tiempo!</h2>
+    <p id="endStats"></p>
+    <button class="restart-btn" id="restartBtn">Jugar de nuevo</button>
+  </div>
+</div>
+
+<script>
+const PREGUNTAS = [{"q": "¿Qué tipo de lenguaje es Python?", "opts": ["Interpretado", "Solo compilado", "Ninguno"], "ra": "RA1"}, {"q": "edad = 15 es de tipo:", "opts": ["Entero", "Cadena", "Decimal"], "ra": "RA1"}, {"q": "¿Qué función devuelve la longitud de una cadena?", "opts": ["len()", "sum()", "print()"], "ra": "RA1"}, {"q": "En una lista, ¿cuál es la primera posición?", "opts": ["0", "1", "-1"], "ra": "RA1"}, {"q": "¿Qué método agrega un elemento al final de una lista?", "opts": ["append()", "pop()", "len()"], "ra": "RA1"}, {"q": "¿Qué hace range(5)?", "opts": ["Genera 0,1,2,3,4", "Genera 1 a 5", "Genera infinito"], "ra": "RA2"}, {"q": "¿Qué instrucción detiene un ciclo por completo?", "opts": ["break", "continue", "pass"], "ra": "RA2"}, {"q": "¿Qué instrucción salta a la siguiente vuelta del ciclo?", "opts": ["continue", "break", "pass"], "ra": "RA2"}, {"q": "¿Qué principio sigue una pila (stack)?", "opts": ["LIFO", "FIFO", "Ninguno"], "ra": "RA2"}, {"q": "*args permite recibir:", "opts": ["Cantidad variable de argumentos", "Solo un argumento", "Ningún argumento"], "ra": "RA2"}, {"q": "¿Qué hace try/except?", "opts": ["Captura y maneja excepciones", "Nunca funciona", "Detiene el programa"], "ra": "RA3"}, {"q": "¿Qué representa una clase en programación orientada a objetos?", "opts": ["Un molde que define atributos y métodos", "Un valor suelto", "Un operador"], "ra": "RA3"}, {"q": "¿Qué permite la herencia entre clases?", "opts": ["Reutilizar propiedades de una clase padre", "Eliminar una clase", "Nada relevante"], "ra": "RA3"}, {"q": "¿Para qué sirve open() en Python?", "opts": ["Abrir o crear un archivo", "Cerrar el programa", "Sumar números"], "ra": "RA3"}, {"q": "Un generador se define usando:", "opts": ["yield", "return exclusivamente", "import"], "ra": "RA3"}, {"q": "Ser proactivo significa:", "opts": ["Elegir cómo responder ante un estímulo", "Reaccionar sin pensar", "Ignorar problemas"], "ra": "RA4"}, {"q": "La iniciativa implica:", "opts": ["Actuar antes de que un problema crezca", "Esperar sin actuar", "Ignorar la situación"], "ra": "RA4"}, {"q": "Una creencia es:", "opts": ["Una idea que consideramos verdadera", "Un tipo de dato", "Un operador"], "ra": "RA5"}, {"q": "Un valor es:", "opts": ["Un principio que guía decisiones", "Un dato suelto", "Una función"], "ra": "RA5"}];
+let timeLeft = 90, score = 0, lives = 3, timerId = null, usedQuestions = new Set(), answering = false;
+
+function pickQuestion(){
+  let available = PREGUNTAS.map((p,i)=>i).filter(i => !usedQuestions.has(i));
+  if (available.length === 0) { usedQuestions.clear(); available = PREGUNTAS.map((p,i)=>i); }
+  const idx = available[Math.floor(Math.random()*available.length)];
+  usedQuestions.add(idx);
+  return PREGUNTAS[idx];
+}
+
+function shuffleOpts(p){
+  const order = p.opts.map((_,i)=>i);
+  for (let i = order.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
+}
+
+function nextQuestion(){
+  answering = false;
+  const p = pickQuestion();
+  document.getElementById('qRa').textContent = p.ra;
+  document.getElementById('qText').textContent = p.q;
+  const order = shuffleOpts(p);
+  const optsEl = document.getElementById('qOpts');
+  optsEl.innerHTML = '';
+  order.forEach(origIdx => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = p.opts[origIdx];
+    btn.onclick = () => {
+      if (answering) return;
+      answering = true;
+      Array.from(optsEl.children).forEach(b => b.disabled = true);
+      if (origIdx === 0) {
+        btn.classList.add('correct');
+        score += 10;
+        document.getElementById('statScore').textContent = score;
+        setTimeout(nextQuestion, 500);
+      } else {
+        btn.classList.add('wrong');
+        optsEl.children[order.indexOf(0)].classList.add('correct');
+        lives--;
+        document.getElementById('statLives').textContent = '❤'.repeat(Math.max(lives,0)) + '🖤'.repeat(3-Math.max(lives,0));
+        if (lives <= 0) {
+          setTimeout(endGame, 700);
+        } else {
+          setTimeout(nextQuestion, 700);
+        }
+      }
+    };
+    optsEl.appendChild(btn);
+  });
+}
+
+function tick(){
+  timeLeft--;
+  document.getElementById('statTime').textContent = Math.max(timeLeft,0);
+  document.getElementById('timerFill').style.width = (timeLeft/90*100) + '%';
+  if (timeLeft <= 0) { endGame(); }
+}
+
+function startGame(){
+  timeLeft = 90; score = 0; lives = 3; usedQuestions.clear();
+  document.getElementById('statTime').textContent = 90;
+  document.getElementById('statScore').textContent = 0;
+  document.getElementById('statLives').textContent = '❤❤❤';
+  document.getElementById('timerFill').style.width = '100%';
+  document.getElementById('startScreen').classList.remove('show');
+  document.getElementById('endScreen').classList.remove('show');
+  document.getElementById('gameScreen').classList.add('show');
+  nextQuestion();
+  timerId = setInterval(tick, 1000);
+}
+
+function endGame(){
+  clearInterval(timerId);
+  document.getElementById('gameScreen').classList.remove('show');
+  document.getElementById('endScreen').classList.add('show');
+  const won = lives > 0;
+  document.getElementById('endIcon').textContent = won ? '🏆' : '⏱';
+  document.getElementById('endTitle').textContent = won ? '¡Se acabó el tiempo!' : '¡Sin vidas!';
+  document.getElementById('endStats').textContent = `Puntaje: ${score} pts · Preguntas correctas: ${score/10}`;
+  try {
+    localStorage.setItem('juego_contrarreloj_u2', JSON.stringify({score, fecha:new Date().toISOString()}));
+  } catch(e) {}
+}
+
+document.getElementById('startBtn').onclick = startGame;
+document.getElementById('restartBtn').onclick = startGame;
+
+// Bloqueo básico
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && ['u','s','p'].includes(e.key.toLowerCase()))) {
+    e.preventDefault();
+  }
+});
+let tabSwitches = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    tabSwitches++;
+    const banner = document.getElementById('lockdown-banner');
+    banner.textContent = '⚠ Cambiaste de pestaña ' + tabSwitches + ' vez/veces';
+    banner.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>

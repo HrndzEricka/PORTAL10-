@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔒</text></svg>">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Juego de la Oca — Cierre de Unidad 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F7FA; --surface:#FFFFFF; --surface-2:#EEF2F7; --line:#D7DEE8;
+    --text:#16233D; --text-muted:#5B6B85;
+    --teal:#0F9488; --teal-dim:rgba(15,148,136,.12);
+    --amber:#B45309; --amber-dim:rgba(180,83,9,.12);
+    --rose:#DB2777; --rose-dim:rgba(219,39,119,.12);
+    --blue:#0369A1;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(1200px 600px at 85% -10%, rgba(45,212,191,.07), transparent 60%), var(--bg);
+    color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; padding:24px 16px 60px;
+  }
+  .wrap{max-width:900px; margin:0 auto;}
+  h1{font-family:'Space Grotesk',sans-serif; font-size:26px; margin:0 0 4px;}
+  .sub{color:var(--text-muted); font-size:14px; margin:0 0 22px;}
+  .hud{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;}
+  .hud .stat{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 16px;}
+  .hud .stat .n{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:var(--teal);}
+  .hud .stat .l{font-size:10px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.05em;}
+
+  .board{
+    display:grid; grid-template-columns:repeat(6, 1fr); gap:6px;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; margin-bottom:20px;
+  }
+  .cell{
+    position:relative; aspect-ratio:1; border-radius:10px; background:var(--surface-2);
+    border:1px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-muted); font-weight:700;
+  }
+  .cell.salida{background:var(--teal-dim); color:var(--teal); border-color:var(--teal);}
+  .cell.meta{background:var(--amber-dim); color:var(--amber); border-color:var(--amber);}
+  .cell.oca{background:var(--rose-dim); color:var(--rose);}
+  .cell.trampa{background:#FDECEA; color:#B91C1C;}
+  .cell.current{outline:3px solid var(--teal); outline-offset:-3px;}
+  .cell .icon{font-size:18px;}
+  .cell .num{position:absolute; top:3px; left:5px; font-size:9px; opacity:.6;}
+  .token{
+    position:absolute; bottom:4px; width:16px; height:16px; border-radius:50%;
+    background:var(--teal); border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.3);
+    transition:all .4s ease;
+  }
+
+  .controls{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px;}
+  .dice-btn{
+    background:var(--teal); color:#fff; border:none; border-radius:12px; padding:14px 28px;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; cursor:pointer;
+  }
+  .dice-btn:disabled{background:var(--line); color:var(--text-muted); cursor:not-allowed;}
+  .dice-result{font-family:'IBM Plex Mono',monospace; font-size:15px; color:var(--text-muted);}
+  .dice-result b{color:var(--text); font-size:22px;}
+
+  .msg-box{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px 20px; margin-bottom:16px; font-size:14px; min-height:24px;}
+
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(22,35,61,.55); z-index:100;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:var(--surface); border-radius:var(--radius); padding:24px; max-width:480px; width:100%;
+  }
+  .modal .ra-tag{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); background:var(--teal-dim); display:inline-block; padding:3px 10px; border-radius:6px; margin-bottom:10px;}
+  .modal h3{font-family:'Space Grotesk',sans-serif; font-size:17px; margin:0 0 16px; line-height:1.4;}
+  .modal .opt{
+    display:block; width:100%; text-align:left; background:var(--surface-2); border:1px solid var(--line);
+    border-radius:10px; padding:11px 14px; margin-bottom:8px; font-size:14px; cursor:pointer; color:var(--text);
+  }
+  .modal .opt:hover{border-color:var(--teal);}
+  .modal .opt.correct{background:var(--teal-dim); border-color:var(--teal); color:var(--teal); font-weight:600;}
+  .modal .opt.wrong{background:var(--rose-dim); border-color:var(--rose); color:var(--rose); font-weight:600;}
+  .modal .opt:disabled{cursor:default;}
+  .modal .next-btn{margin-top:8px; background:var(--teal); color:#fff; border:none; border-radius:10px; padding:10px 18px; font-weight:600; cursor:pointer; display:none;}
+  .modal .next-btn.show{display:inline-block;}
+
+  .win-screen{display:none; text-align:center; padding:40px 20px; background:var(--surface); border-radius:var(--radius); border:1px solid var(--line);}
+  .win-screen.show{display:block;}
+  .win-screen .trophy{font-size:48px; margin-bottom:10px;}
+  .win-screen h2{font-family:'Space Grotesk',sans-serif; font-size:24px; margin:0 0 6px;}
+  .win-screen p{color:var(--text-muted); margin:0 0 20px;}
+  .restart-btn{background:var(--amber); color:#fff; border:none; border-radius:10px; padding:12px 24px; font-weight:600; cursor:pointer; font-size:14px;}
+
+  #lockdown-banner{position:fixed;top:0;left:0;right:0;background:#B45309;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:600;z-index:9999;display:none;}
+</style>
+</head>
+<body>
+<div id="lockdown-banner"></div>
+<div class="wrap">
+  <h1>🎲 Juego de la Oca — Cierre de Unidad 1</h1>
+  <p class="sub">Repasá esquemas lógicos, seguridad, comunicación asertiva y sostenibilidad tirando el dado. Llegá a la meta respondiendo bien.</p>
+
+  <div class="hud">
+    <div class="stat"><div class="n" id="statPos">0</div><div class="l">Casilla</div></div>
+    <div class="stat"><div class="n" id="statCorrect">0</div><div class="l">Correctas</div></div>
+    <div class="stat"><div class="n" id="statWrong">0</div><div class="l">Incorrectas</div></div>
+    <div class="stat"><div class="n" id="statTurns">0</div><div class="l">Turnos</div></div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="controls">
+    <button class="dice-btn" id="diceBtn">🎲 Tirar el dado</button>
+    <span class="dice-result" id="diceResult"></span>
+  </div>
+
+  <div class="msg-box" id="msgBox">Tirá el dado para empezar tu recorrido por la Unidad 1.</div>
+
+  <div class="win-screen" id="winScreen">
+    <div class="trophy">🏆</div>
+    <h2>¡Llegaste a la meta!</h2>
+    <p id="winStats"></p>
+    <button class="restart-btn" id="restartBtn">Jugar de nuevo</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <span class="ra-tag" id="modalRa">RA1</span>
+    <h3 id="modalQ"></h3>
+    <div id="modalOpts"></div>
+    <button class="next-btn" id="modalNext">Continuar →</button>
+  </div>
+</div>
+
+<script>
+const PREGUNTAS = [{"q": "¿Qué método va de una regla general a un caso particular?", "opts": ["Deductivo", "Inductivo", "Ninguno"], "correct": 0, "ra": "RA1"}, {"q": "¿Qué método parte de casos particulares para generalizar?", "opts": ["Inductivo", "Deductivo", "Ninguno"], "correct": 0, "ra": "RA1"}, {"q": "¿Qué es una proposición lógica?", "opts": ["Un enunciado evaluable como V o F", "Un valor suelto", "Un operador"], "correct": 0, "ra": "RA1"}, {"q": "¿Cuáles son las 3 características de un algoritmo?", "opts": ["Preciso, definido, ordenado", "Rápido, bonito, corto", "Largo, único, complejo"], "correct": 0, "ra": "RA1"}, {"q": "¿Qué guarda una variable?", "opts": ["Un valor que puede cambiar", "Solo texto fijo", "Nada"], "correct": 0, "ra": "RA1"}, {"q": "¿Qué exige el operador Y (AND)?", "opts": ["Que ambas condiciones sean verdaderas", "Que una sea verdadera", "Nada en particular"], "correct": 0, "ra": "RA1"}, {"q": "¿Qué exige el operador O (OR)?", "opts": ["Que al menos una condición sea verdadera", "Que ambas sean verdaderas", "Que ninguna lo sea"], "correct": 0, "ra": "RA1"}, {"q": "En pseudocódigo, ¿qué estructura evalúa una condición?", "opts": ["SI / SINO", "PARA", "SUBRUTINA"], "correct": 0, "ra": "RA2"}, {"q": "¿Qué símbolo representa una decisión en un diagrama de flujo?", "opts": ["Un rombo", "Un círculo", "Una flecha"], "correct": 0, "ra": "RA2"}, {"q": "¿Qué ciclo se usa cuando se conoce la cantidad de repeticiones?", "opts": ["PARA", "MIENTRAS", "SI"], "correct": 0, "ra": "RA2"}, {"q": "¿Qué principio sigue una pila?", "opts": ["LIFO: último en entrar, primero en salir", "FIFO: primero en entrar, primero en salir", "Ninguno"], "correct": 0, "ra": "RA2"}, {"q": "¿Qué principio sigue una cola?", "opts": ["FIFO: primero en entrar, primero en salir", "LIFO: último en entrar, primero en salir", "Ninguno"], "correct": 0, "ra": "RA2"}, {"q": "¿Qué es una subrutina?", "opts": ["Un bloque de pasos reutilizable con nombre propio", "Un tipo de dato", "Un operador"], "correct": 0, "ra": "RA2"}, {"q": "Una matriz organiza datos en:", "opts": ["Filas y columnas", "Solo una lista simple", "Ningún orden"], "correct": 0, "ra": "RA2"}, {"q": "¿Qué busca un SGSI?", "opts": ["Proteger la información de forma organizada", "Acelerar internet", "Nada relevante"], "correct": 0, "ra": "RA3"}, {"q": "¿Qué define el alcance de un SGSI?", "opts": ["Qué áreas o sistemas cubre", "El color del sistema", "El precio"], "correct": 0, "ra": "RA3"}, {"q": "¿Qué hace una política de seguridad?", "opts": ["Define reglas generales de comportamiento", "Ejecuta una acción técnica", "Nada relevante"], "correct": 0, "ra": "RA3"}, {"q": "¿Qué evalúa la verificación periódica de un SGSI?", "opts": ["Si las medidas siguen siendo efectivas", "El color del sistema", "Nada relevante"], "correct": 0, "ra": "RA3"}, {"q": "Antes de instalar software, ¿qué se debe verificar primero?", "opts": ["Que sea de fuente oficial", "El tamaño del ícono", "El idioma"], "correct": 0, "ra": "RA3"}, {"q": "¿Qué es una amenaza en el contexto de seguridad de la información?", "opts": ["Algo que puede afectar la información", "Un tipo de variable", "Un operador"], "correct": 0, "ra": "RA3"}, {"q": "¿Qué caracteriza a la comunicación asertiva?", "opts": ["Expresar ideas respetando al otro", "Imponer siempre la opinión", "Callar siempre"], "correct": 0, "ra": "RA4"}, {"q": "\"Tenés que hacerlo así\" es ejemplo de estilo:", "opts": ["Agresivo", "Asertivo", "Pasivo"], "correct": 0, "ra": "RA4"}, {"q": "¿Dónde se ubica la asertividad entre estilos?", "opts": ["En un punto medio entre agresivo y pasivo", "En el extremo agresivo", "En el extremo pasivo"], "correct": 0, "ra": "RA4"}, {"q": "¿Ayuda la asertividad en el trabajo en equipo?", "opts": ["Sí", "No", "Es indiferente"], "correct": 0, "ra": "RA4"}, {"q": "¿Qué busca la sostenibilidad?", "opts": ["No comprometer recursos futuros", "Gastar sin límite", "Ignorar el ambiente"], "correct": 0, "ra": "RA5"}, {"q": "Un sensor que riega solo cuando hace falta ayuda a:", "opts": ["Ahorrar agua", "Gastar más agua", "Nada relevante"], "correct": 0, "ra": "RA5"}, {"q": "¿Qué recursos se busca cuidar en sostenibilidad tecnológica?", "opts": ["Agua y energía", "Solo dinero", "Solo tiempo"], "correct": 0, "ra": "RA5"}];
+const CASILLAS = [{"n": 0, "tipo": "salida"}, {"n": 1, "tipo": "pregunta"}, {"n": 2, "tipo": "pregunta"}, {"n": 3, "tipo": "pregunta"}, {"n": 4, "tipo": "pregunta"}, {"n": 5, "tipo": "pregunta"}, {"n": 6, "tipo": "oca", "texto": "¡Oca! Avanza 2 casillas"}, {"n": 7, "tipo": "pregunta"}, {"n": 8, "tipo": "pregunta"}, {"n": 9, "tipo": "pregunta"}, {"n": 10, "tipo": "trampa", "texto": "Trampa: retrocede 2 casillas"}, {"n": 11, "tipo": "pregunta"}, {"n": 12, "tipo": "pregunta"}, {"n": 13, "tipo": "oca", "texto": "¡Oca! Avanza 2 casillas"}, {"n": 14, "tipo": "pregunta"}, {"n": 15, "tipo": "pregunta"}, {"n": 16, "tipo": "pregunta"}, {"n": 17, "tipo": "trampa", "texto": "Trampa: retrocede 2 casillas"}, {"n": 18, "tipo": "pregunta"}, {"n": 19, "tipo": "oca", "texto": "¡Oca! Avanza 2 casillas"}, {"n": 20, "tipo": "pregunta"}, {"n": 21, "tipo": "pregunta"}, {"n": 22, "tipo": "pregunta"}, {"n": 23, "tipo": "meta"}];
+let pos = 0;
+let correct = 0, wrong = 0, turns = 0;
+let usedQuestions = new Set();
+let waitingAnswer = false;
+
+const boardEl = document.getElementById('board');
+const ICONS = {salida:'🚩', meta:'🏁', oca:'⭐', trampa:'🕳️', pregunta:'❓'};
+
+function renderBoard(){
+  boardEl.innerHTML = '';
+  CASILLAS.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'cell ' + c.tipo + (c.n === pos ? ' current' : '');
+    div.innerHTML = `<span class="num">${c.n+1}</span><span class="icon">${ICONS[c.tipo]}</span>`;
+    if (c.n === pos) {
+      const token = document.createElement('div');
+      token.className = 'token';
+      div.appendChild(token);
+    }
+    boardEl.appendChild(div);
+  });
+  document.getElementById('statPos').textContent = (pos+1) + '/24';
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statWrong').textContent = wrong;
+  document.getElementById('statTurns').textContent = turns;
+}
+
+function pickQuestion(){
+  let available = PREGUNTAS.map((p,i)=>i).filter(i => !usedQuestions.has(i));
+  if (available.length === 0) { usedQuestions.clear(); available = PREGUNTAS.map((p,i)=>i); }
+  const idx = available[Math.floor(Math.random()*available.length)];
+  usedQuestions.add(idx);
+  return PREGUNTAS[idx];
+}
+
+function showQuestion(onDone){
+  waitingAnswer = true;
+  const p = pickQuestion();
+  document.getElementById('modalRa').textContent = p.ra;
+  document.getElementById('modalQ').textContent = p.q;
+  const optsEl = document.getElementById('modalOpts');
+  optsEl.innerHTML = '';
+  const nextBtn = document.getElementById('modalNext');
+  nextBtn.classList.remove('show');
+  p.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.textContent = opt;
+    btn.onclick = () => {
+      Array.from(optsEl.children).forEach(b => b.disabled = true);
+      if (i === p.correct) {
+        btn.classList.add('correct');
+        correct++;
+      } else {
+        btn.classList.add('wrong');
+        Array.from(optsEl.children)[p.correct].classList.add('correct');
+        wrong++;
+      }
+      nextBtn.classList.add('show');
+      nextBtn.onclick = () => {
+        document.getElementById('modalOverlay').classList.remove('show');
+        waitingAnswer = false;
+        onDone(i === p.correct);
+      };
+    };
+    optsEl.appendChild(btn);
+  });
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function setMsg(t){ document.getElementById('msgBox').textContent = t; }
+
+function movePlayer(steps){
+  const diceBtn = document.getElementById('diceBtn');
+  diceBtn.disabled = true;
+  let target = Math.min(pos + steps, 23);
+  const stepOnce = () => {
+    if (pos < target) {
+      pos++;
+      renderBoard();
+      setTimeout(stepOnce, 180);
+    } else {
+      onLand();
+    }
+  };
+  stepOnce();
+}
+
+function onLand(){
+  const cell = CASILLAS[pos];
+  if (cell.tipo === 'meta') {
+    finishGame();
+    return;
+  }
+  if (cell.tipo === 'oca') {
+    setMsg('⭐ ' + cell.texto);
+    pos = Math.min(pos + 2, 23);
+    renderBoard();
+    setTimeout(() => { document.getElementById('diceBtn').disabled = false; if (pos===23) finishGame(); }, 500);
+    return;
+  }
+  if (cell.tipo === 'trampa') {
+    setMsg('🕳️ ' + cell.texto);
+    pos = Math.max(pos - 2, 0);
+    renderBoard();
+    setTimeout(() => { document.getElementById('diceBtn').disabled = false; }, 500);
+    return;
+  }
+  // pregunta
+  showQuestion((ok) => {
+    if (ok) {
+      setMsg('✅ ¡Correcto! Te quedás en la casilla ' + (pos+1) + '.');
+    } else {
+      setMsg('❌ Incorrecto. Retrocedés 1 casilla.');
+      pos = Math.max(pos - 1, 0);
+      renderBoard();
+    }
+    document.getElementById('diceBtn').disabled = false;
+  });
+}
+
+document.getElementById('diceBtn').onclick = () => {
+  if (waitingAnswer) return;
+  turns++;
+  const roll = 1 + Math.floor(Math.random()*6);
+  document.getElementById('diceResult').innerHTML = 'Sacaste: <b>' + roll + '</b>';
+  movePlayer(roll);
+};
+
+function finishGame(){
+  renderBoard();
+  document.getElementById('winScreen').classList.add('show');
+  document.getElementById('winStats').textContent = `${correct} correctas, ${wrong} incorrectas, en ${turns} turnos.`;
+  document.getElementById('diceBtn').disabled = true;
+  try {
+    const pct = Math.round((correct/(correct+wrong||1))*100);
+    localStorage.setItem('juego_oca_u1', JSON.stringify({correct, wrong, turns, pct, fecha:new Date().toISOString()}));
+  } catch(e) {}
+}
+
+document.getElementById('restartBtn').onclick = () => {
+  pos = 0; correct = 0; wrong = 0; turns = 0; usedQuestions.clear();
+  document.getElementById('winScreen').classList.remove('show');
+  document.getElementById('diceBtn').disabled = false;
+  setMsg('Tirá el dado para empezar tu recorrido por la Unidad 1.');
+  renderBoard();
+};
+
+renderBoard();
+
+// Bloqueo básico
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && ['u','s','p'].includes(e.key.toLowerCase()))) {
+    e.preventDefault();
+  }
+});
+let tabSwitches = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    tabSwitches++;
+    const banner = document.getElementById('lockdown-banner');
+    banner.textContent = '⚠ Cambiaste de pestaña ' + tabSwitches + ' vez/veces';
+    banner.style.display = 'block';
+  }
+});
+</script>
+</body>
+</html>
